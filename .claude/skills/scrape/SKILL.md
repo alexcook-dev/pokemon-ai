@@ -1,0 +1,1 @@
+/Users/alexcook/conductor/repos/pokemon-ai/.claude/skills/gstack/scrape/SKILL.md
