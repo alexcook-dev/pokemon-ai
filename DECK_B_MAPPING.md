@@ -1,0 +1,26 @@
+# Deck B — Teal Mask Ogerpon / Meganium / Hydrapple
+
+- 4× `96` Teal Mask Ogerpon ex (TWM 25) — Teal Mask Ogerpon ex TWM 25 EXACT
+- 2× `917` Chikorita (ASC 8) — Chikorita ASC 8 EXACT
+- 2× `709` Bayleef (MEG 9) — Bayleef MEG 9 EXACT
+- 2× `710` Meganium (MEG 10) — Meganium MEG 10 EXACT
+- 2× `92` Applin (TWM 17) — Applin TWM 17 EXACT
+- 2× `93` Dipplin (TWM 18) — Dipplin TWM 18 EXACT
+- 2× `150` Hydrapple ex (SCR 14) — Hydrapple ex SCR 14 EXACT
+- 2× `1071` Meowth ex (POR 62) — Meowth ex POR 62 EXACT
+- 1× `140` Fezandipiti ex (SFA 38) — Fezandipiti ex ASC 142 -> SFA 38
+- 1× `920` Tapu Bulu (SFA 6) — Tapu Bulu SFA 6 EXACT
+- 1× `655` Celebi (MEG 12) — Celebi MEG 12 EXACT
+- 4× `1227` Lillie's Determination (MEG 119) — Lillie's Determination MEG 119 EXACT
+- 2× `1182` Boss’s Orders (PAL 172) — Boss's Orders MEG 114 -> PAL 172
+- 1× `1184` Lana’s Aid (TWM 155) — Lana's Aid TWM 155 EXACT
+- 1× `1188` Ciphermaniac’s Codebreaking (TEF 145) — Ciphermaniac's Codebreaking TEF 145 EXACT
+- 1× `1201` Briar (SCR 132) — Briar SCR 132 EXACT
+- 1× `1231` Dawn (PFL 87) — Dawn PFL 87 EXACT
+- 4× `1094` Bug Catching Set (TWM 143) — Bug Catching Set TWM 143 EXACT
+- 4× `1121` Ultra Ball (SVI 196) — Ultra Ball MEG 131 -> SVI 196
+- 2× `1097` Night Stretcher (SFA 61) — Night Stretcher ASC 196 -> SFA 61
+- 1× `1080` Unfair Stamp (TWM 165) — Unfair Stamp TWM 165 EXACT
+- 1× `1152` Poké Pad (POR 81) — Poké Pad POR 81 EXACT
+- 4× `1261` Forest of Vitality (MEG 117) — Forest of Vitality MEG 117 EXACT
+- 13× `1` Basic {G} Energy (SVE 1) — Grass Energy -> Basic {G} Energy SVE 1
