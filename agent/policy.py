@@ -151,15 +151,15 @@ AREA_BENCH = 5
 # MAIN base weights (documented in module docstring)
 # ---------------------------------------------------------------------------
 # MAIN priority (tuned after smoke eval: premature retreat + never attacking hurt winrate)
-W_ATTACK_READY = 120.0  # attack legal — take it after setup pieces this turn
-W_ATTACK = 95.0
-W_ATTACH = 100.0  # energy first often enables attack
+W_ATTACK_READY = 130.0  # attack legal — take it after setup pieces this turn
+W_ATTACK = 100.0
+W_ATTACH = 105.0  # energy first often enables attack
 W_ATTACH_ALREADY = 8.0
-W_EVOLVE = 88.0
-W_ABILITY = 82.0
-W_PLAY_SEARCH = 78.0
-W_PLAY_SUPPORTER = 72.0
-W_PLAY_BOSS = 85.0
+W_EVOLVE = 95.0
+W_ABILITY = 80.0
+W_PLAY_SEARCH = 82.0
+W_PLAY_SUPPORTER = 74.0
+W_PLAY_BOSS = 90.0
 W_PLAY_STADIUM = 50.0
 W_PLAY_TOOL = 55.0
 W_PLAY_BASIC = 70.0
