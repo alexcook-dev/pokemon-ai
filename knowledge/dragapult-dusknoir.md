@@ -67,11 +67,21 @@ attacker efficiently against the opponent's board.
 
 - H1: Increase attack/attach/evolve/boss weights a second step beyond exp1's
   values — expect flat-to-negative win rate (falsifies whether exp1's
-  direction has more room or has hit diminishing returns).
+  direction has more room or has hit diminishing returns). — TESTED 2026-07-20
+  (Boss slice only: 125→140 / 100→110), kept, 94% (from 92%); expectation of
+  diminishing returns FALSIFIED for Boss. Attach/evolve slices untested.
 - H2: Prize-aware attacker choice (prefer single-prize attackers when the
   prize trade favors it) — from program.md target style #5; untested.
 - H3: Spread-then-execute sequencing (score Phantom Dive higher when it sets
   up a Dusknoir pick-off next turn) — untested.
+- H4 (from training, 2026-07-20): attack-picker preferring the LAST-listed
+  (biggest affordable) attack — TESTED, kept, 86% (from 82%).
+- H5 (from training, 2026-07-20): bench-attach penalty sweet spot is −15
+  (−40 starves the backup attacker: 92% when softened; 0 over-commits: 88%,
+  discarded; the −15 midpoint is the keeper).
+- H6 (from training, 2026-07-20): draw-supporter urgency at hand ≤ 2 —
+  TESTED, discarded, 86% (from 94%): over-drawing burns the supporter slot
+  that Boss/Crispin needed. Don't retry without a smarter condition.
 
 ## Open questions
 
