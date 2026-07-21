@@ -15,3 +15,4 @@ eval/results_mirror_calibration.jsonl
 eval/results_snapshot_smoke.jsonl
 eval/results_smoke.jsonl
 eval/results_smoke2.jsonl
+eval/results_h2h.jsonl

@@ -146,10 +146,14 @@ def norm(s: str) -> str:
 def main() -> int:
     by_exact = {}
     by_name = {}
+    by_setno = {}
     for r in csv.DictReader(open(ROOT / "data" / "card_id_list.csv", encoding="utf-8")):
         key = (norm(r["name"]), r["expansion"].strip(), r["collection_no"].strip())
         by_exact[key] = r["card_id"]
         by_name.setdefault(norm(r["name"]), []).append((r["card_id"], r["expansion"], r["collection_no"]))
+        # printed names sometimes differ from engine names ("Telepathic Psychic
+        # Energy" vs catalog "Telepath Psychic Energy") — set+number is unique
+        by_setno[(r["expansion"].strip(), r["collection_no"].strip())] = (r["card_id"], r["name"])
 
     grand_missing = {}
     for slug, spec in DECKS.items():
@@ -172,6 +176,12 @@ def main() -> int:
                 cid, hexp, hno = hits[0]
                 ids += [cid] * count
                 report.append(f"  {count}x {name} {exp} {no} -> REPRINT {hexp} {hno} (id {cid})")
+                continue
+            setno_hit = by_setno.get((exp, no))
+            if setno_hit:
+                cid, cat_name = setno_hit
+                ids += [cid] * count
+                report.append(f"  {count}x {name} {exp} {no} -> NAME-VARIANT '{cat_name}' (id {cid})")
                 continue
             missing_n += count
             report.append(f"  {count}x {name} {exp} {no} -> MISSING (energy-fill)")
