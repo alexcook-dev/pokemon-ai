@@ -12,7 +12,12 @@ from __future__ import annotations
 import random
 from pathlib import Path
 
-_ROOT = Path(__file__).resolve().parent
+try:
+    _ROOT = Path(__file__).resolve().parent
+except NameError:
+    # Kaggle's harness execs main.py's raw source rather than importing it
+    # as a module, so __file__ is never defined there.
+    _ROOT = Path.cwd()
 
 # Prefer deck_knowledge.DECK; fall back to deck.csv / sample.
 try:

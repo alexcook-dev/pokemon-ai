@@ -12,7 +12,13 @@ from collections import Counter
 from enum import Enum
 from typing import Dict, List, Optional, Set
 
-_HERE = os.path.dirname(os.path.abspath(__file__))
+try:
+    _HERE = os.path.dirname(os.path.abspath(__file__))
+except NameError:
+    # Defensive: only main.py is guaranteed to lack __file__ under Kaggle's
+    # exec-based harness (this module is reached via a real `import`, which
+    # sets __file__ normally), but fall back safely just in case.
+    _HERE = os.path.join(os.getcwd(), "agent")
 _PROJECT_ROOT = os.path.dirname(_HERE)
 _DECK_CSV = os.path.join(_PROJECT_ROOT, "deck.csv")
 _CATALOG_CSV = os.path.join(_PROJECT_ROOT, "data", "card_id_list.csv")

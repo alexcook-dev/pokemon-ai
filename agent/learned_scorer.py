@@ -23,7 +23,10 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-_WEIGHTS_PATH = Path(__file__).resolve().parent / "learned_weights.json"
+try:
+    _WEIGHTS_PATH = Path(__file__).resolve().parent / "learned_weights.json"
+except NameError:
+    _WEIGHTS_PATH = Path.cwd() / "agent" / "learned_weights.json"
 _weights_cache: Optional[Dict[str, float]] = None
 _weights_loaded = False
 

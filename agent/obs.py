@@ -24,7 +24,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 # Default catalog next to the project root: <repo>/data/card_id_list.csv
-_DEFAULT_CATALOG = Path(__file__).resolve().parent.parent / "data" / "card_id_list.csv"
+try:
+    _DEFAULT_CATALOG = Path(__file__).resolve().parent.parent / "data" / "card_id_list.csv"
+except NameError:
+    _DEFAULT_CATALOG = Path.cwd() / "data" / "card_id_list.csv"
 
 # Module-level cache so repeated loads are cheap.
 _CATALOG_CACHE: Optional[Dict[int, str]] = None

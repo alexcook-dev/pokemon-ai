@@ -18,3 +18,5 @@ eval/results_smoke2.jsonl
 eval/results_h2h.jsonl
 eval/.champion-build.*
 .gstack/
+eval/results.jsonl
+eval/swiss_run*.json
