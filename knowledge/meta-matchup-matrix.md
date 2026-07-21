@@ -50,8 +50,17 @@ energy-nerfed t1/t2/t5/t6/t7; its standings are superseded by this matrix).
 
 ## Nomination
 
-**Mega Kangaskhan box (deck_t3) = best ladder-deck candidate** by max-min and
-overall. kanga-mist variant (−1 W, −1 P splash energies, +2 Mist) under test vs
-its three sub-50 matchups (ala-prime 45%, lopunny 45%, lucario 42%).
-Dragapult (current live deck) is defensible mid-field; a deck switch is a
-judgment call, not an emergency.
+**Mega Kangaskhan box (deck_t3, STOCK list) = best ladder-deck candidate** by
+max-min (42% worst) and overall (54%). Dragapult (current live deck) is
+defensible mid-field; a deck switch is a judgment call, not an emergency.
+
+### kanga-mist variant — TESTED 2026-07-20, DISCARDED
+
+−1 Water, −1 Psychic splash energy, +2 Mist Energy. Full 8-matchup row
+(20 games each): prime 60 (+15), lopunny 55 (+10), lucario 50 (+8) — the
+three target matchups all lifted as the Mist mechanism predicted — BUT
+rillaboom 35 (−25), rocket 40 (−35), hydrapple 37 (−13), stock-ala 50 (−15),
+dragapult 70 (+20). New worst-case 35% < stock's 42% → discard. Lesson:
+the 1-of splash energies are load-bearing matchup coverage (likely
+Chien-Pao {W} / Latias {P} attack costs), not free slots. Any future
+Kangaskhan tech must cut something else.
