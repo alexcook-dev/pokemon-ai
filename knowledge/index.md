@@ -14,3 +14,5 @@ each falsifiable by the frozen eval (`./eval/run_train_eval.sh`).
 - [Tournament gauntlet 2026-07-20](tournament-gauntlet-jul20.md) — 5× Swiss Bo3 vs 7 meta decks: Dragapult avg 6.2/8, winless vs Alakazam; Alakazam-b won 3 of 5 tournaments
 - [Meta matchup matrix](meta-matchup-matrix.md) — full 9-deck round-robin (~700 games, real energies): Kangaskhan box is max-min champion 42%/54%; no >50%-vs-all deck exists; supersedes the gauntlet standings
 - [Combo-sequencing architecture](combo-sequencing-architecture.md) — tiers 1-4 in agent/policy.py (knowledge/memory/search/learned); champion-vs-challenger confirmed 0 regression (25-25 vs pre-change code)
+- [Kaggle format notes](kaggle-format-notes.md) — cg/libcg engine + observation/action API, missing deck-legality checks, real ladder tier list & score-band meta (Mega Lucario low-elo → Alakazam mid → Marnie Grimmsnarl top); Hydrapple absent from both real snapshots — researched 2026-07-21
+- [Advanced sequencing principles](advanced-sequencing-principles.md) — Fezandipiti KO-trigger, Stamp-before-Fez, opponent-target denial fix, deck-thinning; champion-vs-challenger 48% (parity)

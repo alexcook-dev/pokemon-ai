@@ -135,6 +135,7 @@ ID_POKE_PAD = 1152
 ID_HAMMER = 1120
 ID_UNFAIR_STAMP = 1080
 ID_PRIME_CATCHER = 1088  # ACE SPEC — draw + gust; combo-order matters (tier 1/3)
+ID_FEZANDIPITI = 140  # Fezandipiti ex — ability "Flip the Script"
 
 LINE_DRAGAPULT = (ID_DREEPY, ID_DRAKLOAK, ID_DRAGAPULT)
 LINE_DUSK = (ID_DUSKULL, ID_DUSCLOPS, ID_DUSKNOIR)
@@ -279,10 +280,15 @@ def _read_situation(obs: dict) -> Dict[str, Any]:
 
     turn = current.get("turn")
     turn_plan = _get_turn_plan(yi, turn, hand_ids)
+    ko_last_turn = _detect_ko_last_turn(yi, turn, opp_prize)
+
+    deck_n = int(me.get("deckCount") or 0)
 
     return {
         "turn": turn,
         "turn_plan": turn_plan,
+        "ko_last_turn": ko_last_turn,
+        "deck_n": deck_n,
         "goal": goal,
         "me": me,
         "opp": opp,
@@ -401,6 +407,108 @@ def _compute_turn_plan(hand_ids: List[int]) -> Dict[str, Any]:
     # rank: earlier in the chosen order -> larger bonus for that card id
     rank = {cid: (len(order) - i) for i, cid in enumerate(order)}
     return {"order": order, "rank": rank}
+
+
+# ---------------------------------------------------------------------------
+# CROSS-TURN memory: "was one of my Pokemon KO'd during the opponent's last
+# turn" — a second, distinct kind of state from the tier-2 turn-plan cache
+# above (that one deliberately resets every turn; this one deliberately
+# persists ACROSS turns). Needed for Fezandipiti ex's real ability text
+# (verified against the engine binary, not memory): "Once during your turn,
+# if any of your Pokemon were Knocked Out during your opponent's last turn,
+# you may draw 3 cards." Same seat-isolation requirement as tier 2 — keyed
+# by yi so self-play/tournament runs (one policy instance, two seats) can
+# never cross-contaminate.
+_LAST_TURN_SNAPSHOT: Dict[int, Tuple[Any, int]] = {}  # yi -> (turn, opp_prize) at that turn's start
+
+
+def _detect_ko_last_turn(yi: int, turn: Any, opp_prize: Optional[int]) -> bool:
+    """True iff opp_prize dropped since the start of THIS seat's previous
+    turn — opp_prize only decreases when the opponent takes a prize, which
+    only happens when they KO one of ours, which can only happen on their
+    (intervening) turn. Snapshots once per turn change, not every call.
+    """
+    if opp_prize is None:
+        return False
+    prev = _LAST_TURN_SNAPSHOT.get(yi)
+    result = False
+    if prev is not None and turn != prev[0]:
+        result = opp_prize < prev[1]
+    if prev is None or turn != prev[0]:
+        _LAST_TURN_SNAPSHOT[yi] = (turn, opp_prize)
+    return result
+
+
+def _find_mon_by_option(sit: Dict[str, Any], opt: dict, cid: Optional[int]) -> Optional[dict]:
+    """Match a CTX_SWITCH/CTX_TO_ACTIVE option back to the actual board mon
+    it refers to, so target-selection can see that mon's real HP/energy —
+    the option itself only carries identifiers (serial/cardId), not state.
+    Tries serial first (exact — distinguishes duplicate copies), falls back
+    to first-matching card_id.
+    """
+    pool = list(sit.get("opp_bench") or []) + list(sit.get("my_bench") or [])
+    if sit.get("opp_active"):
+        pool.append(sit["opp_active"])
+    if sit.get("my_active"):
+        pool.append(sit["my_active"])
+    serial = opt.get("serial")
+    if serial is not None:
+        for m in pool:
+            if isinstance(m, dict) and m.get("serial") == serial:
+                return m
+    if cid is not None:
+        for m in pool:
+            if isinstance(m, dict) and _cid(m) == cid:
+                return m
+    return None
+
+
+def _fez_flip_the_script_live(sit: Dict[str, Any]) -> bool:
+    """True iff Fezandipiti ex is in play for us AND its ability's real
+    trigger condition (verified from the engine binary) is currently met:
+    a Pokemon of ours was KO'd during the opponent's last turn.
+    """
+    if not sit.get("ko_last_turn"):
+        return False
+    if sit.get("my_active_id") == ID_FEZANDIPITI:
+        return True
+    return any(_cid(m) == ID_FEZANDIPITI for m in (sit.get("my_bench") or []))
+
+
+def _opponent_target_bonus(mon: Optional[dict], cid: Optional[int]) -> float:
+    """Scoring bonus for choosing an OPPONENT's Pokemon (Boss's Orders /
+    gust / snipe targets) — the tactic being "lock a Pokemon they don't
+    want active into the active spot so they have to burn cards/tempo to
+    get out of it," not just "hit the biggest attacker."
+
+    Real retreat cost is NOT available: checked obs.py's parsing and two
+    real logged debug dumps (eval/debug_*.json) — no retreatCost field
+    anywhere. Uses defensible proxies instead of exact data:
+      - low remaining HP -> a follow-up KO is likely reachable
+      - no energy attached -> forced active AND can't attack back, which
+        buys a free turn regardless of what its retreat cost actually is
+      - "ex" in the printed name -> real-world proxy for "probably has a
+        non-trivial retreat cost and is the Pokemon they least want stuck
+        active" (ex/mega Pokemon are overwhelmingly retreat-cost 2+ in the
+        actual game). An approximation, not measured data — replace with
+        real retreat costs if a future engine version exposes them.
+    """
+    bonus = 0.0
+    if isinstance(mon, dict):
+        try:
+            hp, max_hp = mon.get("hp"), mon.get("maxHp")
+            if hp is not None and max_hp:
+                frac = float(hp) / float(max_hp)
+                bonus += (1.0 - frac) * 30.0
+        except (TypeError, ValueError):
+            pass
+        has_energy = bool(mon.get("energies") or mon.get("energyCards"))
+        if not has_energy:
+            bonus += 25.0
+    name = _card_name(cid)
+    if name.endswith(" ex"):
+        bonus += 15.0
+    return bonus
 
 
 # ---------------------------------------------------------------------------
@@ -523,6 +631,11 @@ def _human_main_checklist(obs: dict, sit: Dict[str, Any], opt: dict, opt_type: i
     # --- Ability: free value before attack ---
     if opt_type == OPT_ABILITY:
         score = 120.0
+        if _option_card_id(obs, opt) == ID_FEZANDIPITI and _fez_flip_the_script_live(sit):
+            # Flip the Script: draw 3, once per turn, only live when a
+            # Pokemon of ours was KO'd during the opponent's last turn —
+            # a strong tempo swing worth taking ahead of most else.
+            score = 180.0
         if can_attack and energy_done:
             score -= 20.0
         return score
@@ -601,8 +714,15 @@ def _human_play_card_base(
         # cut of this rule lived AFTER this early-return and so never fired
         # here, only pre-attack, where it wastes tempo — regressed the
         # frozen eval 94% -> 84%; moving it here was the actual fix).
-        if cid == ID_UNFAIR_STAMP and sit["opp_has_bench"]:
-            return 105.0
+        if cid == ID_UNFAIR_STAMP:
+            if _fez_flip_the_script_live(sit):
+                # Sequence Stamp BEFORE Flip the Script (score above its
+                # 180): resolve our own hand-shrinking effect before
+                # drawing 3 more, so the extra draws aren't complicated by
+                # a disruption effect landing on top of a just-grown hand.
+                return 190.0
+            if sit["opp_has_bench"]:
+                return 105.0
         # Prime Catcher: fine to fire in the ready-to-attack window too
         # (draw 2 rarely costs the turn), but attacking still wins ties.
         if cid == ID_PRIME_CATCHER:
@@ -619,18 +739,31 @@ def _human_play_card_base(
         return 140.0 if sit["opp_has_bench"] else 20.0
 
     # --- Tier 1: Prime Catcher's development-phase value (draw 2 helps hit
-    # missing pieces regardless of combo timing). Unfair Stamp intentionally
-    # has NO branch here — pre-attack, it falls through to the generic
+    # missing pieces regardless of combo timing). Unfair Stamp otherwise has
+    # NO general branch here — pre-attack, it falls through to the generic
     # catch-all below (~45), matching its pre-fix behavior: locking the
-    # opponent's hand before we're even threatening a KO wastes tempo.
+    # opponent's hand before we're even threatening a KO wastes tempo. The
+    # one exception is the same "before Fez" sequencing as the ready-to-
+    # attack branch above — Flip the Script's ability score (180) isn't
+    # gated on attack-readiness, so this needs to fire here too or the
+    # sequencing bug just reappears in the not-yet-attacking case.
+    if cid == ID_UNFAIR_STAMP and _fez_flip_the_script_live(sit):
+        return 190.0
     if cid == ID_PRIME_CATCHER:
         return 100.0 if sit["goal"] in ("setup", "develop") else 70.0
 
     # --- Search thinking: "am I missing pieces?" ---
     if cid in SEARCH_IDS or role == "search":
+        # Deck thinning: every search (found or discarded-as-cost) removes
+        # a card from the remaining deck, improving the odds of every
+        # future draw hitting something useful — not just this turn's
+        # pick. That value is bigger the more deck is left to thin, so
+        # scale a small bonus with deck_n rather than a flat add (capped;
+        # deck_n=50 -> +15, deck_n=10 -> +3, deck_n=0 -> +0).
+        thinning_bonus = min(15.0, sit.get("deck_n", 0) * 0.3)
         if sit["goal"] in ("setup", "develop"):
-            return 130.0
-        return 80.0
+            return 130.0 + thinning_bonus
+        return 80.0 + thinning_bonus
 
     # --- Basics to bench ---
     if cid in BASICS_PRIORITY or role in ("basic", "support_pokemon"):
@@ -806,8 +939,20 @@ def _human_card_pick(
             return 70.0
         return 15.0
 
-    # Switch into Active: prefer attackers / healthy
+    # Switch into Active. Two distinct decisions were sharing this one
+    # branch with no playerIndex check (bug, 2026-07-20): choosing where
+    # WE retreat/promote to (should prefer our own attackers) is a
+    # different question from choosing which of the OPPONENT's Pokemon a
+    # gust effect (Boss's Orders etc.) drags into their active spot
+    # (should prefer denial — a Pokemon they don't want stuck there —
+    # not anything from OUR OWN priority list, which doesn't even apply
+    # to their card IDs).
     if context in (CTX_SWITCH, CTX_TO_ACTIVE):
+        pi = opt.get("playerIndex")
+        yi = _your_index(obs)
+        if pi is not None and yi is not None and int(pi) != int(yi):
+            mon = _find_mon_by_option(sit, opt, cid)
+            return 50.0 + _opponent_target_bonus(mon, cid)
         return 50.0 + _basic_priority_bonus(cid) + (20.0 if cid in ATTACKERS else 0.0)
 
     if context in (CTX_ATTACH_FROM, CTX_ATTACH_TO) if False else ():
