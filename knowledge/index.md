@@ -10,3 +10,4 @@ each falsifiable by the frozen eval (`./eval/run_train_eval.sh`).
 ## Decks
 
 - [Dragapult / Dusknoir](dragapult-dusknoir.md) — spread damage with Phantom Dive, Dusknoir picks off damaged targets; wins the prize race through multi-KO turns (deck: `deck.csv`, currently active) — updated 2026-07-20
+- [Hydrapple](hydrapple.md) — Syrup Storm counts all in-play Grass Energy (doubled by Meganium) for cheap big OHKOs, notably on Dragapult ex (deck: `deck_hydrapple.csv`) — updated 2026-07-20
