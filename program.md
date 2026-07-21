@@ -55,6 +55,7 @@ Target style (prior for heuristics, not a substitute for metrics):
 | `main.py` | Thin entry / safety | YOU only for contract/safety fixes |
 | `eval/run_batch.py`, `eval/run_batch_docker.sh`, `eval/run_train_eval.sh` | Frozen harness | **NEVER** (except trivial crash fixes with human OK) |
 | `deck.csv` | Fixed list | **NEVER** unless human opens deck search |
+| `knowledge/*.md`, `deck_<slug>.csv` | Guide-derived strategy + candidate decks | `/ptcg-guide` writes; YOU read (POLICY HINTS = hypothesis queue) |
 | `program.md` | This skill brief | **Human** |
 
 Submission must include `main.py`, `deck.csv`, and `agent/` (see `package_submission.sh`).
@@ -126,6 +127,8 @@ commit	win_rate	crash_rate	games	status	description
 LOOP:
   1. Note current commit + best kept win_rate from results.tsv
   2. ONE hypothesis (e.g. "prefer attach when Active lacks energy for listed attack")
+     — check knowledge/*.md "POLICY HINTS" first (guide-derived, via /ptcg-guide);
+       prefer an untested hint over an invented idea when one fits
   3. Edit agent/policy.py (preferred) — minimal diff
   4. git add agent/ main.py (only what changed) && git commit -m "train: <hypothesis>"
   5. TRAIN_TAG=<short-idea> ./eval/run_train_eval.sh > run.log 2>&1

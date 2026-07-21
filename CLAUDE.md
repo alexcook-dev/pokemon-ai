@@ -17,3 +17,5 @@ Key routing rules:
 - Save progress → invoke /context-save
 - Resume context → invoke /context-restore
 - Author a backlog-ready spec/issue → invoke /spec
+- Deck guides/strategy articles to ingest → invoke /ptcg-guide
+- Train the agent/improve win rate → invoke /ptcg-train
