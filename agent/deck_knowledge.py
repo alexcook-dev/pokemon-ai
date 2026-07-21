@@ -204,14 +204,33 @@ _OVERRIDES = {
     1252: STADIUM,  # Gravity Mountain
     1250: STADIUM,  # Area Zero Underdepths
     1264: STADIUM,  # Battle Cage
+    1246: STADIUM,  # Jamming Tower
+    1256: STADIUM,  # Team Rocket's Watchtower
+    1261: STADIUM,  # Forest of Vitality
     1174: TOOL,  # Air Balloon
+    1161: TOOL,  # Handheld Fan
     1142: SEARCH_ITEM,  # Fighting Gong
     1079: SEARCH_ITEM,  # Rare Candy
     1145: SEARCH_ITEM,  # Mega Signal
     1088: GUST_SUPPORTER,  # Prime Catcher
+    1120: SEARCH_ITEM,  # Crushing Hammer (item disruption)
+    1080: SEARCH_ITEM,  # Unfair Stamp
+    1087: SEARCH_ITEM,  # Hand Trimmer
+    119: BASIC,  # Dreepy
+    120: EVOLUTION,  # Drakloak
+    121: ATTACKER,  # Dragapult ex
+    131: BASIC,  # Duskull
+    132: EVOLUTION,  # Dusclops
+    133: ATTACKER,  # Dusknoir
+    235: BASIC,  # Budew
+    112: SUPPORT_POKEMON,  # Munkidori
+    1198: DRAW_SUPPORTER,  # Crispin
+    1231: DRAW_SUPPORTER,  # Dawn
     20: ENERGY_SPECIAL,  # Rock Fighting Energy
     6: ENERGY_BASIC,
     5: ENERGY_BASIC,
+    2: ENERGY_BASIC,
+    7: ENERGY_BASIC,
     1: ENERGY_BASIC,
 }
 for _cid, _role in _OVERRIDES.items():

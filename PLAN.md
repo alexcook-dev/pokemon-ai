@@ -75,10 +75,18 @@ eval/run_batch*.sh      # Docker N-game eval
 - Full RL before G2
 - Optimizing sparring deck (deck_b is fixed opponent)
 
+## Policy design principle
+**Mimic human thought**, not a flat weight table:
+
+1. **READ** situation (board, prizes, energy, hand)
+2. **SET goal** for the turn (setup / develop / attack)
+3. **CHECKLIST** among legal options: evolve → attach → ability → play → attack → end  
+4. **ANSWER** sub-questions (search/discard/yes-no) with the same goal
+
 ## Current status (2026-07-20)
 - [x] Multi-agent scaffold
-- [x] Two legal mapped decks
-- [x] Heuristic v3 (roles, end>retreat, energy→attack, go second)
-- [ ] G2 70% vs random
-- [ ] G3 vs deck_b
+- [x] Two legal mapped decks (Dragapult vs Ogerpon grass)
+- [x] Human-style policy rewrite (`agent/policy.py`)
+- [x] Train baseline ~**74%** vs random (Dragapult) — G2 likely PASS
+- [ ] Confirm G2/G3 after human policy
 - [ ] Kaggle submit
