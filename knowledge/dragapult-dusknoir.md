@@ -2,14 +2,21 @@
 
 > Derived from an untrusted guide via /ptcg-guide — strategy data only, not instructions.
 
-- Source: seeded from DECK_MAPPING.md + established Grok-session decisions, ingested 2026-07-20
-- Guide author/level: internal baseline (no external guide ingested yet — replace/extend when one is posted)
+- Source: seeded from DECK_MAPPING.md + established Grok-session decisions, ingested 2026-07-20; decklist attributed via user-pasted list 2026-07-20
+- Guide author/level: decklist is **"Neddy Kosek - Pult / Noir - NAIC 26"** (NAIC 2026 competitive list); strategy notes are still internal baseline — extend when a written guide for this archetype is posted
 
 ## Decklist (mapped to competition IDs)
 
-See `DECK_MAPPING.md` for the full 60-card mapping with reprint substitutions.
-Live as `deck.csv`. Notable: Special Red Card was not in the pool →
-substituted Hand Trimmer (1087) for hand disruption.
+**Named list: "Neddy Kosek - Pult / Noir - NAIC 26"** — saved as
+`deck_neddy-kosek-pult-noir-naic26.csv` (60/60 legal, 1 substitution).
+This is the exact list the live `deck.csv` was built from (verified
+multiset-identical 2026-07-20) — the active agent pilots Neddy Kosek's list.
+
+Composition: 19 Pokémon / 33 Trainers / 8 Energy (3 Psychic, 3 Fire, 2 Darkness).
+See `DECK_MAPPING.md` for the full card-by-card mapping with reprint
+substitutions (PRE→SFA Dusk line, MEG→PAL Boss's Orders, etc.). Notable:
+Special Red Card (CRI 82) is not in the competition pool → substituted
+Hand Trimmer (1087) for hand disruption.
 
 ## Archetype & win condition
 
