@@ -21,11 +21,11 @@ TWO named lists saved for this archetype:
 | Matias Matricardi — 1st Place Regional Campinas | `deck_hydrapple.csv` | from Limitless, linked by the Metafy guide |
 
 **Walworth vs Matricardi (functional diff, printings aside):** Walworth adds
-Hoothoot+Noctowl (1+1), Special Red Card tech (→ Hand Trimmer 1087 substitute,
-not in pool), +1 Dawn, +1 Poké Pad; cuts 1 Meowth ex, 2 Ultra Ball,
+Hoothoot+Noctowl (1+1), +1 Dawn, +1 Poké Pad, and a 15th Grass Energy (in the
+out-of-pool Special Red Card's slot); cuts 1 Meowth ex, 2 Ultra Ball,
 1 Ciphermaniac's Codebreaking, 1 Forest of Vitality (3 vs 4).
 
-### "Grant Walworth - Hydrapple - NAIC 2026" (60/60 legal, 1 functional substitution)
+### "Grant Walworth - Hydrapple - NAIC 2026" (60/60 legal, 1 slot filled with Energy)
 
 4× `96` Teal Mask Ogerpon ex (TWM 25) — EXACT
 2× `92` Applin (TWM 17) — EXACT
@@ -52,9 +52,8 @@ not in pool), +1 Dawn, +1 Poké Pad; cuts 1 Meowth ex, 2 Ultra Ball,
 2× `1121` Ultra Ball (SVI 196) — Ultra Ball MEG 131 not in pool → SVI 196
 1× `1097` Night Stretcher (SFA 61) — Night Stretcher ASC 196 not in pool → SFA 61
 1× `1080` Unfair Stamp (TWM 165) — EXACT
-1× `1087` Hand Trimmer (TEF 150) — SUBSTITUTED: Special Red Card CRI 82 not in pool (hand disruption, same substitution as the Dragapult list)
 3× `1261` Forest of Vitality (MEG 117) — EXACT
-14× `1` Basic {G} Energy (SVE 1) — Grass Energy MEE 1 → Basic {G} Energy SVE 1
+15× `1` Basic {G} Energy (SVE 1) — Grass Energy MEE 1 → Basic {G} Energy SVE 1; 15th copy fills the Special Red Card (CRI 82) slot — card not in pool, and per user standing rule (2026-07-20) missing cards become extra basic Energy, never a stand-in trainer
 
 ### Matricardi Campinas list (`deck_hydrapple.csv`)
 

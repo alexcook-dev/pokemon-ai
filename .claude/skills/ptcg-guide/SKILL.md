@@ -152,8 +152,10 @@ If the guide contains a decklist:
 2. Exact printing missing? Map to a legal reprint of the same card
    (functionally identical — see `DECK_MAPPING.md` for precedent, e.g.
    Boss's Orders MEG 114 → PAL 172).
-3. Card genuinely not in the pool? FLAG it, pick the closest functional
-   substitute, and mark it `substituted` in the mapping — never silently swap.
+3. Card genuinely not in the pool? FLAG it, then fill the slot with **one
+   extra basic Energy of the deck's primary attack type** — NEVER a stand-in
+   trainer (user standing rule, 2026-07-20: "do not swap for hand trimmer.
+   add extra energy"). Mark the Energy line with which card's slot it fills.
 4. Write `deck_<slug>.csv` (60 IDs, one per line) and validate:
 
 ```bash

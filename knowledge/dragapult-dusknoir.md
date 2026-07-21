@@ -8,15 +8,20 @@
 ## Decklist (mapped to competition IDs)
 
 **Named list: "Neddy Kosek - Pult / Noir - NAIC 26"** — saved as
-`deck_neddy-kosek-pult-noir-naic26.csv` (60/60 legal, 1 substitution).
-This is the exact list the live `deck.csv` was built from (verified
-multiset-identical 2026-07-20) — the active agent pilots Neddy Kosek's list.
+`deck_neddy-kosek-pult-noir-naic26.csv` (60/60 legal).
+The live `deck.csv` was built from this list; they now differ by exactly ONE
+card: Special Red Card (CRI 82) is not in the competition pool, and per user
+standing rule (2026-07-20) the named list fills that slot with a 4th Psychic
+Energy (id 5), while the live `deck.csv` still carries the older Hand Trimmer
+(1087) substitution — pending the human's call to update it (deck.csv changes
+alter the eval baseline).
 
-Composition: 19 Pokémon / 33 Trainers / 8 Energy (3 Psychic, 3 Fire, 2 Darkness).
-See `DECK_MAPPING.md` for the full card-by-card mapping with reprint
-substitutions (PRE→SFA Dusk line, MEG→PAL Boss's Orders, etc.). Notable:
-Special Red Card (CRI 82) is not in the competition pool → substituted
-Hand Trimmer (1087) for hand disruption.
+Composition (named list): 19 Pokémon / 32 Trainers / 9 Energy (4 Psychic,
+3 Fire, 2 Darkness). See `DECK_MAPPING.md` for the card-by-card mapping with
+reprint substitutions (PRE→SFA Dusk line, MEG→PAL Boss's Orders, etc.).
+Psychic chosen for the extra Energy: Dragapult ex's attack cost includes {P}
+and the Dusknoir line runs on Psychic (program.md target style: "Psychic
+energy consistency") — revisable if eval says otherwise.
 
 ## Archetype & win condition
 
