@@ -65,6 +65,8 @@ Target style (prior for heuristics, not a substitute for metrics):
 |------|------|-----------|
 | `agent/policy.py` | Decision scoring / choose_actions | **YOU (primary)** |
 | `agent/obs.py`, `options.py`, `deck_knowledge.py` | Helpers | YOU only if needed for a policy change |
+| `agent/learned_scorer.py` | Tier-4 hook (off by default) | YOU only alongside a retrain via `eval/train_value_model.py` |
+| `agent/learned_weights.json` | Trained tier-4 weights (if any) | Written only by `eval/train_value_model.py`; requires `PTCG_USE_LEARNED_SCORER=1` to activate, validate via protocol v2 before trusting |
 | `main.py` | Thin entry / safety | YOU only for contract/safety fixes |
 | `eval/run_batch.py`, `eval/run_batch_docker.sh`, `eval/run_train_eval.sh` | Frozen harness | **NEVER** (except trivial crash fixes with human OK) |
 | `deck.csv` | Fixed list | **NEVER** unless human opens deck search |

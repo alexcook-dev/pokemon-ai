@@ -4,6 +4,8 @@ Human-style decision policy for cabt Pokémon TCG (Dragapult primary).
 Think like a player, not a weight table:
 
   1. READ the situation (prizes, board, hand pressure, energy status)
+  1.5 PLAN a combo order for this turn, once, reused across every
+      decision in the turn (tiers 2+3 — see below)
   2. SET a turn goal (setup / develop / attack / disrupt)
   3. WALK the normal human action checklist among *legal* options only
   4. When the game asks a sub-question (which card? yes/no?), answer
@@ -13,10 +15,47 @@ Think like a player, not a weight table:
 Deck selection (select is None) is handled by main.py.
 
 On any error: random legal sample (never crash).
+
+Combo-sequencing architecture (added 2026-07-20): the base scorer above is
+a stateless per-option greedy scorer — it has no lookahead and no memory
+across the several `choose_actions` calls that make up one turn, so it
+cannot represent "play these two cards together, in this order" or
+"invest now for a payoff two turns from now." Four additive layers close
+that gap, each independently inspectable/removable:
+
+  Tier 1 (knowledge)  — `_BASE_CARD_VALUE` / `_synergy_bonus`: hand-authored
+                         card values and pairwise synergy terms (e.g. Boss's
+                         Orders before Unfair Stamp).
+  Tier 2 (memory)     — `_TURN_PLAN_CACHE` / `_get_turn_plan`: persists a
+                         plan across calls within one turn. Keyed by
+                         (seat, turn, hand contents) so it is safe when the
+                         same policy instance pilots both seats in self-play
+                         / tournament runs — a plan can never leak across
+                         seats, and any hand change mid-turn (a draw, a
+                         search) invalidates the cached plan automatically.
+  Tier 3 (search)     — `_search_best_order`: a bounded (<=4 cards, <=24
+                         permutations) combinatorial search over PLAY ORDER
+                         this turn, using tier 1's values/synergy terms.
+                         This is NOT multi-turn game-tree search — the
+                         compiled cabt engine gives no forward-simulation
+                         hook to build that against — it is single-turn
+                         ordering search, which is exactly the gap the
+                         stateless scorer cannot cover on its own.
+  Tier 4 (learned)    — `agent/learned_scorer.py`: an additive scoring
+                         adjustment from a trained model. OFF by default
+                         (no weights file ships, and it requires
+                         PTCG_USE_LEARNED_SCORER=1 even if one exists) —
+                         see `eval/train_value_model.py` to train and
+                         validate one via protocol v2 before ever trusting it.
+
+All four are purely additive on top of the existing, 94%-vs-random-tested
+base scoring (`_think_score_base` / `_human_play_card_base`) — nothing here
+changes behavior for decks/situations that never trigger it.
 """
 
 from __future__ import annotations
 
+import itertools
 import random
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
@@ -25,6 +64,11 @@ try:
     from agent import deck_knowledge as _deck_mod  # type: ignore
 except Exception:  # pragma: no cover
     _deck_mod = None
+
+try:
+    from agent.learned_scorer import learned_score_adjustment as _learned_score_adjustment  # type: ignore
+except Exception:  # pragma: no cover
+    _learned_score_adjustment = None
 
 # ---------------------------------------------------------------------------
 # Enums (cabt ints)
@@ -89,6 +133,8 @@ ID_ULTRA_BALL = 1121
 ID_POFFIN = 1086
 ID_POKE_PAD = 1152
 ID_HAMMER = 1120
+ID_UNFAIR_STAMP = 1080
+ID_PRIME_CATCHER = 1088  # ACE SPEC — draw + gust; combo-order matters (tier 1/3)
 
 LINE_DRAGAPULT = (ID_DREEPY, ID_DRAKLOAK, ID_DRAGAPULT)
 LINE_DUSK = (ID_DUSKULL, ID_DUSCLOPS, ID_DUSKNOIR)
@@ -97,6 +143,27 @@ ATTACKERS = frozenset({ID_DRAGAPULT, ID_DUSKNOIR, 1071, 140, ID_MUNKIDORI, ID_DR
 EVOS = frozenset({ID_DRAKLOAK, ID_DRAGAPULT, ID_DUSCLOPS, ID_DUSKNOIR})
 SEARCH_IDS = frozenset({ID_ULTRA_BALL, ID_POFFIN, ID_POKE_PAD, 1122, 1097, 1094})
 ENERGY_IDS = frozenset({1, 2, 3, 4, 5, 6, 7, 8, 9, 19, 20})
+
+# --- Tier 1 (knowledge) + Tier 3 (search) shared vocabulary ---------------
+# Cards whose relative ORDER within a turn can matter. Deliberately Items
+# only, not Supporters (Crispin, Lillie's Determination): only one
+# Supporter is legal per turn (sit["supporter_played"]), so there is no
+# same-turn "order" between two Supporters to search over — including them
+# here (an earlier draft did) just added a spurious, always-the-same-way
+# Crispin-over-Lillie nudge on top of scoring that already handles that
+# tradeoff on its own. Root-caused 2026-07-20: regressed the frozen eval
+# 94% -> 82-84% on identical seed=0 games; removing them recovers it.
+# Extend with new ITEM-type combo pieces as /ptcg-guide ingests hints.
+COMBO_CANDIDATES = frozenset({ID_BOSS, ID_UNFAIR_STAMP, ID_PRIME_CATCHER})
+
+# Hand-authored per-card value used only to rank ORDER among COMBO_CANDIDATES
+# present in hand this turn — not a replacement for _human_play_card_base's
+# own (already-tested) absolute scoring.
+_BASE_CARD_VALUE = {
+    ID_BOSS: 90.0,
+    ID_UNFAIR_STAMP: 60.0,
+    ID_PRIME_CATCHER: 85.0,
+}
 
 
 # ---------------------------------------------------------------------------
@@ -210,8 +277,12 @@ def _read_situation(obs: dict) -> Dict[str, Any]:
         if goal == "develop":
             goal = "attack"
 
+    turn = current.get("turn")
+    turn_plan = _get_turn_plan(yi, turn, hand_ids)
+
     return {
-        "turn": current.get("turn"),
+        "turn": turn,
+        "turn_plan": turn_plan,
         "goal": goal,
         "me": me,
         "opp": opp,
@@ -252,9 +323,113 @@ def _board_wants_evolution(me: dict) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# 1.5) PLAN — turn-scoped combo-order search (tiers 2 & 3)
+# ---------------------------------------------------------------------------
+# Tier 2: cache a plan across the several choose_actions() calls that make
+# up one turn. Keyed by (seat, turn, hand contents) — never by anything
+# tied to a specific obs/select dict, since those are rebuilt fresh by the
+# engine every call. The hand-contents component makes this self-healing:
+# a draw or search mid-turn changes hand_ids, which misses the cache and
+# forces a fresh plan, rather than executing a plan built for a hand that
+# no longer exists. Bounded size: this is a coherence aid, not a source of
+# truth, so a full clear on overflow is fine (worst case = extra recompute).
+_TURN_PLAN_CACHE: Dict[Tuple[Any, ...], Dict[str, Any]] = {}
+_TURN_PLAN_CACHE_MAX = 16
+
+
+def _get_turn_plan(yi: int, turn: Any, hand_ids: List[int]) -> Dict[str, Any]:
+    key = (yi, turn, tuple(sorted(hand_ids)))
+    cached = _TURN_PLAN_CACHE.get(key)
+    if cached is not None:
+        return cached
+    if len(_TURN_PLAN_CACHE) > _TURN_PLAN_CACHE_MAX:
+        _TURN_PLAN_CACHE.clear()
+    plan = _compute_turn_plan(hand_ids)
+    _TURN_PLAN_CACHE[key] = plan
+    return plan
+
+
+def _synergy_bonus(order: Tuple[int, ...]) -> float:
+    """Tier 1's pairwise combo knowledge, expressed as search terms so
+    tier 3 can weigh them in context instead of only matching a literal
+    hard-coded pattern. Small and explicit on purpose — extend alongside
+    COMBO_CANDIDATES as new combos are documented in knowledge/*.md.
+    """
+    bonus = 0.0
+    if ID_BOSS in order and ID_UNFAIR_STAMP in order:
+        # Gust the answer into range, THEN lock it out — Boss before Stamp.
+        # Wrong order (bonus stays negative) locks before a target is even
+        # in range, which is close to wasted.
+        if order.index(ID_BOSS) < order.index(ID_UNFAIR_STAMP):
+            bonus += 40.0
+        else:
+            bonus -= 15.0
+    if ID_PRIME_CATCHER in order and len(order) > 1 and order.index(ID_PRIME_CATCHER) == 0:
+        # Its draw is worth more the earlier it happens — more of the turn
+        # left to act on whatever it finds.
+        bonus += 15.0
+    return bonus
+
+
+def _search_best_order(candidates: List[int]) -> Tuple[int, ...]:
+    """Tier 3: enumerate every ordering of the (small) combo-capable hand
+    this turn, score each by base value + synergy terms, keep the best.
+
+    Bounded to <=4 cards (<=24 permutations) so this stays cheap. This is
+    deliberately NOT multi-turn game-tree search / MCTS — the compiled
+    cabt engine (libcg.so) exposes no fork/rollout hook to build a forward
+    model against, so true search over the opponent's responses isn't
+    implementable against it in this timeframe. What this covers is the
+    real gap: single-turn ordering among the cards already in hand, which
+    the stateless per-option scorer above has no way to represent at all.
+    """
+    if not candidates:
+        return ()
+    pool = candidates[:4]
+    best_order: Tuple[int, ...] = tuple(pool)
+    best_score = float("-inf")
+    for perm in itertools.permutations(pool):
+        score = sum(_BASE_CARD_VALUE.get(c, 50.0) for c in perm) + _synergy_bonus(perm)
+        if score > best_score:
+            best_score, best_order = score, perm
+    return best_order
+
+
+def _compute_turn_plan(hand_ids: List[int]) -> Dict[str, Any]:
+    candidates = [c for c in hand_ids if c in COMBO_CANDIDATES]
+    order = _search_best_order(candidates) if len(candidates) >= 2 else tuple(candidates)
+    # rank: earlier in the chosen order -> larger bonus for that card id
+    rank = {cid: (len(order) - i) for i, cid in enumerate(order)}
+    return {"order": order, "rank": rank}
+
+
+# ---------------------------------------------------------------------------
 # 2–3) THINK + CHECKLIST — score legal options like a player scanning choices
 # ---------------------------------------------------------------------------
 def _think_score(
+    obs: dict,
+    sit: Dict[str, Any],
+    select_type: int,
+    context: int,
+    option_index: int,
+    opt: dict,
+) -> float:
+    """Adds tier 4 (learned adjustment, off by default) on top of the
+    existing, tested base scorer. Pure no-op unless a weights file exists
+    AND PTCG_USE_LEARNED_SCORER=1 is set — see agent/learned_scorer.py.
+    """
+    base = _think_score_base(obs, sit, select_type, context, option_index, opt)
+    if _learned_score_adjustment is None:
+        return base
+    try:
+        cid = _option_card_id(obs, opt)
+        opt_type = int(opt.get("type") if opt.get("type") is not None else -1)
+        return base + _learned_score_adjustment(sit, cid, opt_type)
+    except Exception:
+        return base
+
+
+def _think_score_base(
     obs: dict,
     sit: Dict[str, Any],
     select_type: int,
@@ -382,6 +557,25 @@ def _human_play_card(
     can_attack: bool,
     energy_done: bool,
 ) -> float:
+    """Adds tiers 2+3 (turn-plan ordering bonus) on top of the existing,
+    tested base scorer. `sit["turn_plan"]["rank"]` is empty unless >=2
+    COMBO_CANDIDATES are in hand, so this is a no-op for the vast majority
+    of decisions — decks/hands with no combo-capable cards see identical
+    scores to before this change.
+    """
+    cid = _resolve_play_card_id(obs, opt)
+    base = _human_play_card_base(obs, sit, opt, can_attack, energy_done)
+    rank = sit.get("turn_plan", {}).get("rank", {})
+    return base + rank.get(cid, 0) * 3.0
+
+
+def _human_play_card_base(
+    obs: dict,
+    sit: Dict[str, Any],
+    opt: dict,
+    can_attack: bool,
+    energy_done: bool,
+) -> float:
     """When looking at hand: what would I click?"""
     cid = _resolve_play_card_id(obs, opt)
     name = _card_name(cid).lower()
@@ -401,6 +595,18 @@ def _human_play_card(
         # Still allow Boss if gust pays
         if cid == ID_BOSS and sit["opp_has_bench"]:
             return 110.0
+        # Unfair Stamp's real value: play it in the SAME window as the KO,
+        # to deny the opponent's response — this is the "right after"
+        # branch that was missing before (bug fix, 2026-07-20: the first
+        # cut of this rule lived AFTER this early-return and so never fired
+        # here, only pre-attack, where it wastes tempo — regressed the
+        # frozen eval 94% -> 84%; moving it here was the actual fix).
+        if cid == ID_UNFAIR_STAMP and sit["opp_has_bench"]:
+            return 105.0
+        # Prime Catcher: fine to fire in the ready-to-attack window too
+        # (draw 2 rarely costs the turn), but attacking still wins ties.
+        if cid == ID_PRIME_CATCHER:
+            return 60.0
         return 25.0
 
     # --- Supporter thinking ---
@@ -411,6 +617,14 @@ def _human_play_card(
         return 110.0 if sit["hand_n"] <= 4 else 95.0
     if cid == ID_BOSS or role in ("boss", "gust_supporter"):
         return 140.0 if sit["opp_has_bench"] else 20.0
+
+    # --- Tier 1: Prime Catcher's development-phase value (draw 2 helps hit
+    # missing pieces regardless of combo timing). Unfair Stamp intentionally
+    # has NO branch here — pre-attack, it falls through to the generic
+    # catch-all below (~45), matching its pre-fix behavior: locking the
+    # opponent's hand before we're even threatening a KO wastes tempo.
+    if cid == ID_PRIME_CATCHER:
+        return 100.0 if sit["goal"] in ("setup", "develop") else 70.0
 
     # --- Search thinking: "am I missing pieces?" ---
     if cid in SEARCH_IDS or role == "search":

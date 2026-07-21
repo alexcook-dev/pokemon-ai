@@ -13,3 +13,4 @@ each falsifiable by the frozen eval (`./eval/run_train_eval.sh`).
 - [Hydrapple](hydrapple.md) — Syrup Storm counts all in-play Grass Energy (doubled by Meganium) for cheap big OHKOs, notably on Dragapult ex (decks: `deck_hydrapple.csv` = Matricardi Campinas, `deck_grant-walworth-hydrapple-naic2026.csv` = "Grant Walworth - Hydrapple - NAIC 2026") — updated 2026-07-20
 - [Tournament gauntlet 2026-07-20](tournament-gauntlet-jul20.md) — 5× Swiss Bo3 vs 7 meta decks: Dragapult avg 6.2/8, winless vs Alakazam; Alakazam-b won 3 of 5 tournaments
 - [Meta matchup matrix](meta-matchup-matrix.md) — full 9-deck round-robin (~700 games, real energies): Kangaskhan box is max-min champion 42%/54%; no >50%-vs-all deck exists; supersedes the gauntlet standings
+- [Combo-sequencing architecture](combo-sequencing-architecture.md) — tiers 1-4 in agent/policy.py (knowledge/memory/search/learned); champion-vs-challenger confirmed 0 regression (25-25 vs pre-change code)
