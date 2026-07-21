@@ -1,1 +1,1 @@
-/Users/alexcook/conductor/repos/pokemon-ai/.claude/skills/gstack/sync-gbrain/SKILL.md
+/Users/alexcook/conductor/workspaces/pokemon-ai/buffalo/.claude/skills/gstack/sync-gbrain/SKILL.md

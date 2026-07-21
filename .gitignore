@@ -1,0 +1,20 @@
+results.tsv
+run.log
+__pycache__/
+*.pyc
+result.html
+libcg_docker.so
+eval/results_*.jsonl
+eval/results_train_*.jsonl
+submission.tar.gz
+data/Card_ID List_EN.pdf
+result_human.html
+eval/champion/
+eval/results_tournament*.jsonl
+eval/results_mirror_calibration.jsonl
+eval/results_snapshot_smoke.jsonl
+eval/results_smoke.jsonl
+eval/results_smoke2.jsonl
+eval/results_h2h.jsonl
+eval/.champion-build.*
+.gstack/

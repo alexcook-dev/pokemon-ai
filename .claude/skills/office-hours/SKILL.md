@@ -1,1 +1,1 @@
-/Users/alexcook/conductor/repos/pokemon-ai/.claude/skills/gstack/office-hours/SKILL.md
+/Users/alexcook/conductor/workspaces/pokemon-ai/buffalo/.claude/skills/gstack/office-hours/SKILL.md

@@ -1,1 +1,1 @@
-/Users/alexcook/conductor/repos/pokemon-ai/.claude/skills/gstack/pair-agent/SKILL.md
+/Users/alexcook/conductor/workspaces/pokemon-ai/buffalo/.claude/skills/gstack/pair-agent/SKILL.md
