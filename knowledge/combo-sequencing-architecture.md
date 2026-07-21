@@ -90,6 +90,41 @@ baseline; don't assume a recorded number is still real without checking.
 Champion-vs-challenger resolves noise that vs-random cannot once win rate
 is this close to saturated — reach for it first, not last.
 
+## Pre-merge adversarial review, 2026-07-21 — 3 findings, all fixed
+
+Independent fresh-context review before merging to main (no prior session
+context, had to reproduce claims from code alone) found:
+
+1. **Real, empirically-confirmed bug**: `_LAST_TURN_SNAPSHOT` correctly
+   isolates by seat (verified) but NOT by game — a multi-game eval loop
+   (`eval/run_batch.py --games N`, tournament/h2h runners) reuses the same
+   process across games, and turn numbers reset each game. A same-numbered
+   turn in a new game could silently compare against the PREVIOUS game's
+   stale `opp_prize`, misfiring the Fezandipiti KO-trigger. Reproduced
+   directly (game 2 turn 2 colliding with game 1's stored turn 2 returned
+   a false positive). Fixed: turn numbers only increase within one real
+   game, so a same-or-lower turn number for a seat is now treated as
+   unambiguous proof of a new game (hard reset, not a same-game comparison).
+   Verified with the exact repro plus regression checks for real same-game
+   KO detection and seat isolation, all passing.
+2. **Non-atomic destructive write**: `eval/set_champion.sh` did
+   `rm -rf eval/champion/` BEFORE confirming the replacement `git archive`
+   succeeded — a bad commit arg or transient failure left `--opponent
+   snapshot` broken with no working champion. Fixed: build into a temp dir,
+   `mv` into place atomically, `trap` cleans up on any failure. Tested both
+   the success path and a deliberately-invalid-commit failure path; the
+   existing champion survives the failure untouched.
+3. **Pre-existing dead code** (not introduced this session): a `context in
+   (CTX_ATTACH_FROM, CTX_ATTACH_TO) if False else ()` line referenced two
+   undefined names, inert only because the literal `False` condition
+   short-circuits evaluation. Removed — it suggested unfinished
+   attach-from/to targeting logic; worth revisiting if that context ever
+   shows up in real option lists.
+
+Champion-vs-challenger re-validation after all three fixes (vs the
+pre-fix commit, deck held constant): 23-27 (46%), 0 crashes — parity,
+exactly the expected signal for a bug fix rather than a behavior change.
+
 ## Next steps (not done here)
 
 - Test Hydrapple's H4 hint (denser Boss+Stamp count) through this same

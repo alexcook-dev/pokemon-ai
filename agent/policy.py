@@ -427,14 +427,33 @@ def _detect_ko_last_turn(yi: int, turn: Any, opp_prize: Optional[int]) -> bool:
     turn — opp_prize only decreases when the opponent takes a prize, which
     only happens when they KO one of ours, which can only happen on their
     (intervening) turn. Snapshots once per turn change, not every call.
+
+    Bug fixed 2026-07-21 (pre-merge adversarial review, empirically
+    reproduced): this is keyed by seat (correctly — verified no cross-seat
+    leakage), but a bare `turn != prev[0]` check has no notion of GAME
+    boundaries. `eval/run_batch.py`'s `--games N` loop (and self-play/
+    tournament eval generally) reuses this same module across many games in
+    one process; turn numbers reset each game, so a same-numbered turn in a
+    NEW game could silently compare against the PREVIOUS game's stale
+    opp_prize baseline. Turn numbers only ever increase within one real
+    game, so a same-or-lower turn number for this seat is proof this is a
+    fresh game reusing the slot — treat it as a hard reset, not a same-game
+    turn change.
     """
     if opp_prize is None:
         return False
     prev = _LAST_TURN_SNAPSHOT.get(yi)
+    is_new_game = prev is None or (
+        isinstance(turn, (int, float))
+        and isinstance(prev[0], (int, float))
+        and turn <= prev[0]
+    )
+    if is_new_game:
+        _LAST_TURN_SNAPSHOT[yi] = (turn, opp_prize)
+        return False
     result = False
-    if prev is not None and turn != prev[0]:
+    if turn != prev[0]:
         result = opp_prize < prev[1]
-    if prev is None or turn != prev[0]:
         _LAST_TURN_SNAPSHOT[yi] = (turn, opp_prize)
     return result
 
@@ -954,9 +973,6 @@ def _human_card_pick(
             mon = _find_mon_by_option(sit, opt, cid)
             return 50.0 + _opponent_target_bonus(mon, cid)
         return 50.0 + _basic_priority_bonus(cid) + (20.0 if cid in ATTACKERS else 0.0)
-
-    if context in (CTX_ATTACH_FROM, CTX_ATTACH_TO) if False else ():
-        pass
 
     # Default card
     return 35.0 + _basic_priority_bonus(cid) - 0.01 * option_index
