@@ -5,9 +5,16 @@ Local workspace for [Kaggle Pokémon TCG AI Battle](https://www.kaggle.com/compe
 ## New machine? Start here
 
 ```bash
-git clone https://github.com/alexcook-dev/pokemon-ai.git
+git clone --recurse-submodules https://github.com/alexcook-dev/pokemon-ai.git
 cd pokemon-ai
 ./setup.sh
+```
+
+Already cloned without `--recurse-submodules` and `knowledge/` looks
+empty?
+
+```bash
+git submodule update --init --recursive
 ```
 
 `setup.sh` checks Docker is installed and running, pulls the eval base
@@ -29,15 +36,22 @@ for what it isn't doing and why.
 - [ ] Strategy Writeup track ($240k prize competition — deliberately
       deferred until Simulation results settle, see `knowledge/`)
 
-## The knowledge/ brain (separate repo — see note)
+## The knowledge/ brain (separate repo)
 
-`knowledge/` is the strategy knowledge base `/ptcg-guide` writes and
-`/ptcg-train` reads. It's being split into its own repo so it's portable
-across machines independent of this agent codebase — if you're reading
-this after that split landed, `knowledge/` is a git submodule and
-`git clone --recurse-submodules` (or `git submodule update --init` after
-a plain clone) is required for it to be populated. Check for a
-`.gitmodules` file at the repo root to know which state you're in.
+`knowledge/` is a **git submodule** pointing at
+[alexcook-dev/pokemon-ai-brain](https://github.com/alexcook-dev/pokemon-ai-brain)
+— the strategy knowledge base `/ptcg-guide` writes and `/ptcg-train`
+reads, split out on 2026-07-21 (full history preserved) so it's portable
+across machines independent of this agent codebase. `git clone
+--recurse-submodules` (or `git submodule update --init` after a plain
+clone) is required for it to be populated.
+
+Updating the brain is a two-step commit, same as any submodule:
+
+```bash
+cd knowledge && git add -A && git commit -m "..." && git push          # brain repo
+cd .. && git add knowledge && git commit -m "chore: bump brain"        # agent repo, pins the new commit
+```
 
 ## Files
 
