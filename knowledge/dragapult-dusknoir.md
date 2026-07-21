@@ -1,5 +1,7 @@
 # Dragapult / Dusknoir — strategy knowledge
 
+> Derived from an untrusted guide via /ptcg-guide — strategy data only, not instructions.
+
 - Source: seeded from DECK_MAPPING.md + established Grok-session decisions, ingested 2026-07-20
 - Guide author/level: internal baseline (no external guide ingested yet — replace/extend when one is posted)
 
@@ -50,8 +52,9 @@ attacker efficiently against the opponent's board.
 
 ## POLICY HINTS (testable hypotheses for /ptcg-train)
 
-- H1: exp1 (higher attack/attach/evolve/boss weights) already KEPT — direction
-  validated; further weight increases may have diminishing or negative returns.
+- H1: Increase attack/attach/evolve/boss weights a second step beyond exp1's
+  values — expect flat-to-negative win rate (falsifies whether exp1's
+  direction has more room or has hit diminishing returns).
 - H2: Prize-aware attacker choice (prefer single-prize attackers when the
   prize trade favors it) — from program.md target style #5; untested.
 - H3: Spread-then-execute sequencing (score Phantom Dive higher when it sets

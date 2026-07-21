@@ -20,12 +20,17 @@ improve the cabt battle policy. Do not redesign the Kaggle competition. Optimize
 ```bash
 if [ -f main.py ] && [ -d agent ]; then
   PTCG_ROOT="$(pwd)"
-elif [ -f "$HOME/Projects/ptcg-ai-battle/main.py" ]; then
-  PTCG_ROOT="$HOME/Projects/ptcg-ai-battle"
 else
-  echo "BLOCKED: cannot find ptcg-ai-battle (main.py + agent/)"
-  exit 1
+  PTCG_ROOT=""
+  for d in /Users/alexcook/conductor/workspaces/pokemon-ai/*/; do
+    if [ -f "$d/main.py" ] && [ -d "$d/agent" ]; then PTCG_ROOT="${d%/}"; break; fi
+  done
+  if [ -z "$PTCG_ROOT" ] && [ -f "$HOME/Projects/ptcg-ai-battle/main.py" ]; then
+    PTCG_ROOT="$HOME/Projects/ptcg-ai-battle"
+    echo "WARNING: legacy checkout — no knowledge/ base here; guide-derived hints will NOT be found"
+  fi
 fi
+[ -z "$PTCG_ROOT" ] && { echo "BLOCKED: cannot find pokemon-ai (main.py + agent/)"; exit 1; }
 cd "$PTCG_ROOT"
 echo "PTCG_ROOT=$PTCG_ROOT"
 ```

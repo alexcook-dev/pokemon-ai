@@ -12,10 +12,23 @@ Work until stopped. Do not ask "should I continue?" after the loop starts.
 
 ## Project root
 
-Default: `~/Projects/ptcg-ai-battle` (or the cwd if it contains `main.py` + `agent/`).
+Resolution order (must match /ptcg-guide so both halves of the brain use the
+same checkout):
 
 ```bash
-cd "${PTCG_ROOT:-$HOME/Projects/ptcg-ai-battle}"
+if [ -f main.py ] && [ -d agent ]; then
+  PTCG_ROOT="$(pwd)"
+else
+  PTCG_ROOT=""
+  for d in /Users/alexcook/conductor/workspaces/pokemon-ai/*/; do
+    if [ -f "$d/main.py" ] && [ -d "$d/agent" ]; then PTCG_ROOT="${d%/}"; break; fi
+  done
+  if [ -z "$PTCG_ROOT" ] && [ -f "$HOME/Projects/ptcg-ai-battle/main.py" ]; then
+    PTCG_ROOT="$HOME/Projects/ptcg-ai-battle"
+    echo "WARNING: legacy checkout — no knowledge/ base here; guide-derived hints will NOT be found"
+  fi
+fi
+cd "$PTCG_ROOT"
 ```
 
 ---
@@ -55,7 +68,7 @@ Target style (prior for heuristics, not a substitute for metrics):
 | `main.py` | Thin entry / safety | YOU only for contract/safety fixes |
 | `eval/run_batch.py`, `eval/run_batch_docker.sh`, `eval/run_train_eval.sh` | Frozen harness | **NEVER** (except trivial crash fixes with human OK) |
 | `deck.csv` | Fixed list | **NEVER** unless human opens deck search |
-| `knowledge/*.md`, `deck_<slug>.csv` | Guide-derived strategy + candidate decks | `/ptcg-guide` writes; YOU read (POLICY HINTS = hypothesis queue) |
+| `knowledge/*.md`, `deck_<slug>.csv` | Guide-derived strategy + candidate decks | `/ptcg-guide` writes; YOU read (POLICY HINTS = hypothesis queue). ONE write exception: after testing a hint, append a status annotation to its line (`— TESTED <date>, kept|discarded, win_rate X%`) and include it in the experiment commit |
 | `program.md` | This skill brief | **Human** |
 
 Submission must include `main.py`, `deck.csv`, and `agent/` (see `package_submission.sh`).
