@@ -1,0 +1,25 @@
+# Competition deck (Mega Lucario legal)
+
+User Dhelmise list saved as `deck_user_dhelmise.csv` (weak in-pool reprints).
+This deck uses only exact competition-pool lines for a stronger heuristic baseline.
+
+- 4× `677` Riolu (MEG)
+- 3× `678` Mega Lucario ex (MEG)
+- 2× `44` Bloodmoon Ursaluna ex (TWM)
+- 2× `1055` Hawlucha (POR)
+- 1× `174` Fan Rotom (SCR)
+- 4× `1227` Lillie's Determination (MEG)
+- 3× `1182` Boss’s Orders (PAL)
+- 4× `1121` Ultra Ball (SVI)
+- 4× `1086` Buddy-Buddy Poffin (TEF)
+- 2× `1122` Pokégear 3.0 (SVI)
+- 2× `1097` Night Stretcher (SFA)
+- 2× `1174` Air Balloon (BLK)
+- 2× `1088` Prime Catcher (TEF)
+- 2× `1079` Rare Candy (SVI)
+- 2× `1145` Mega Signal (MEG)
+- 2× `1141` Premium Power Pro (MEG)
+- 1× `1142` Fighting Gong (MEG)
+- 2× `1252` Gravity Mountain (SSP)
+- 12× `6` Basic {F} Energy (SVE)
+- 4× `20` Rock Fighting Energy (POR)

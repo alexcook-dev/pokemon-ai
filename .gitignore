@@ -1,0 +1,9 @@
+results.tsv
+run.log
+__pycache__/
+*.pyc
+result.html
+libcg_docker.so
+eval/results_*.jsonl
+eval/results_train_*.jsonl
+submission.tar.gz
