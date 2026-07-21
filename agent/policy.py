@@ -400,7 +400,7 @@ def _human_play_card(
     if can_attack and energy_done:
         # Still allow Boss if gust pays
         if cid == ID_BOSS and sit["opp_has_bench"]:
-            return 100.0
+            return 110.0
         return 25.0
 
     # --- Supporter thinking ---
@@ -410,7 +410,7 @@ def _human_play_card(
     if cid == ID_LILLIE or role in ("draw_supporter", "supporter"):
         return 110.0 if sit["hand_n"] <= 4 else 95.0
     if cid == ID_BOSS or role in ("boss", "gust_supporter"):
-        return 125.0 if sit["opp_has_bench"] else 20.0
+        return 140.0 if sit["opp_has_bench"] else 20.0
 
     # --- Search thinking: "am I missing pieces?" ---
     if cid in SEARCH_IDS or role == "search":
