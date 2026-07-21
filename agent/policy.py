@@ -276,9 +276,10 @@ def _think_score(
     if select_type == SELECT_MAIN or context == CTX_MAIN:
         return _human_main_checklist(obs, sit, opt, opt_type)
 
-    # Attack choice among multiple attacks
+    # Attack choice among multiple attacks: the engine only lists affordable
+    # attacks, and bigger attacks list later — prefer the last affordable one
     if select_type == SELECT_ATTACK or context == 35:
-        return 50.0 - 0.01 * option_index
+        return 50.0 + 1.0 * option_index
 
     # Evolve picker
     if select_type == SELECT_EVOLVE or context == 37:
