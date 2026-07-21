@@ -9,12 +9,13 @@
 
 **Named list: "Neddy Kosek - Pult / Noir - NAIC 26"** — saved as
 `deck_neddy-kosek-pult-noir-naic26.csv` (60/60 legal).
-The live `deck.csv` was built from this list; they now differ by exactly ONE
-card: Special Red Card (CRI 82) is not in the competition pool, and per user
-standing rule (2026-07-20) the named list fills that slot with a 4th Psychic
-Energy (id 5), while the live `deck.csv` still carries the older Hand Trimmer
-(1087) substitution — pending the human's call to update it (deck.csv changes
-alter the eval baseline).
+The live `deck.csv` IS this list (verified multiset-identical 2026-07-20,
+after the user-approved swap): Special Red Card (CRI 82) is not in the
+competition pool, and per user standing rule (2026-07-20) that slot holds a
+4th Psychic Energy (id 5). The older Hand Trimmer (1087) substitution is
+retired everywhere. Note: pre-swap eval baselines (74% original, exp1) were
+measured with Hand Trimmer in the list — the next 50-game baseline resets
+comparability.
 
 Composition (named list): 19 Pokémon / 32 Trainers / 9 Energy (4 Psychic,
 3 Fire, 2 Darkness). See `DECK_MAPPING.md` for the card-by-card mapping with
