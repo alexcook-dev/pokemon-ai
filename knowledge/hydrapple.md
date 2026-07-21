@@ -13,6 +13,51 @@ See **Open questions** for exactly what's missing.
 
 ## Decklist (mapped to competition IDs)
 
+TWO named lists saved for this archetype:
+
+| Named list | File | Notes |
+|---|---|---|
+| **"Grant Walworth - Hydrapple - NAIC 2026"** | `deck_grant-walworth-hydrapple-naic2026.csv` | user-pasted 2026-07-20; Hoothoot/Noctowl draw engine build |
+| Matias Matricardi — 1st Place Regional Campinas | `deck_hydrapple.csv` | from Limitless, linked by the Metafy guide |
+
+**Walworth vs Matricardi (functional diff, printings aside):** Walworth adds
+Hoothoot+Noctowl (1+1), Special Red Card tech (→ Hand Trimmer 1087 substitute,
+not in pool), +1 Dawn, +1 Poké Pad; cuts 1 Meowth ex, 2 Ultra Ball,
+1 Ciphermaniac's Codebreaking, 1 Forest of Vitality (3 vs 4).
+
+### "Grant Walworth - Hydrapple - NAIC 2026" (60/60 legal, 1 functional substitution)
+
+4× `96` Teal Mask Ogerpon ex (TWM 25) — EXACT
+2× `92` Applin (TWM 17) — EXACT
+2× `93` Dipplin (TWM 18) — EXACT
+2× `150` Hydrapple ex (SCR 14) — EXACT
+1× `917` Chikorita (ASC 8) — EXACT
+1× `708` Chikorita (MEG 8) — EXACT
+1× `709` Bayleef (MEG 9) — EXACT
+1× `918` Bayleef (ASC 9) — EXACT
+2× `710` Meganium (MEG 10) — EXACT
+1× `172` Hoothoot (SCR 114) — EXACT
+1× `173` Noctowl (SCR 115) — EXACT
+1× `1071` Meowth ex (POR 62) — EXACT
+1× `140` Fezandipiti ex (SFA 38) — Fezandipiti ex ASC 142 not in pool → SFA 38 (same card)
+1× `655` Celebi (MEG 12) — EXACT
+1× `920` Tapu Bulu (SFA 6) — EXACT
+4× `1227` Lillie's Determination (MEG 119) — EXACT
+2× `1182` Boss's Orders (PAL 172) — Boss's Orders MEG 114 not in pool → PAL 172
+2× `1231` Dawn (PFL 87) — EXACT
+1× `1201` Briar (SCR 132) — EXACT
+1× `1184` Lana's Aid (TWM 155) — EXACT
+4× `1094` Bug Catching Set (TWM 143) — EXACT
+2× `1152` Poké Pad (POR 81) — EXACT
+2× `1121` Ultra Ball (SVI 196) — Ultra Ball MEG 131 not in pool → SVI 196
+1× `1097` Night Stretcher (SFA 61) — Night Stretcher ASC 196 not in pool → SFA 61
+1× `1080` Unfair Stamp (TWM 165) — EXACT
+1× `1087` Hand Trimmer (TEF 150) — SUBSTITUTED: Special Red Card CRI 82 not in pool (hand disruption, same substitution as the Dragapult list)
+3× `1261` Forest of Vitality (MEG 117) — EXACT
+14× `1` Basic {G} Energy (SVE 1) — Grass Energy MEE 1 → Basic {G} Energy SVE 1
+
+### Matricardi Campinas list (`deck_hydrapple.csv`)
+
 Not the guide's own list (its July 17 2026 decklist page is paywalled) — this is the
 actual 1st Place Regional Campinas list piloted by Matias Matricardi, linked as evidence
 from the free section. Two other lists linked from the same page (Champions League
