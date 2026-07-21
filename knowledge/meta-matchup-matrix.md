@@ -48,6 +48,43 @@ energy-nerfed t1/t2/t5/t6/t7; its standings are superseded by this matrix).
   head-to-head but inherits harder counters (25% vs Lopunny/Rillaboom) — a
   faster cannon is still a cannon.
 
+## boltpon-basics-rush — original brew, TESTED 2026-07-20
+
+Claude-designed (`eval/build_own_deck.py`): 4 Raging Bolt ex, 4 Teal Mask
+Ogerpon ex, 3 Meowth ex, 2 Iron Leaves ex — zero evolution lines, every
+attacker a Basic. Thesis: the policy is a stateless per-option greedy
+scorer (`_think_score` in `agent/policy.py`) with no lookahead or
+turn-persisted plan, so it systematically misplays anything requiring
+combo sequencing (Boss's Orders + Unfair Stamp, Ogerpon's bench-energy
+Teal Dance investment, evolve-timing). An all-Basic "attach and swing"
+shell sidesteps that weakness entirely instead of fighting it.
+
+**Real risk accepted:** 13/13 Pokemon are "ex" — every KO against this
+deck gives up 2 prizes, opponent needs only 3 KOs to sweep. Not hidden;
+tested anyway since the question (does simplicity+power beat the prize
+liability under THIS pilot) is empirical.
+
+160 games (20/opponent) vs the 8-deck field:
+
+| opponent | record | win% |
+|---|---|---|
+| dragapult (worst) | 8-11 (d1) | 42% |
+| kangaskhan | 10-10 | 50% |
+| rillaboom | 10-10 | 50% |
+| lopunny | 11-9 | 55% |
+| lucario | 12-8 | 60% |
+| rocket-mewtwo | 12-8 | 60% |
+| hydrapple | 13-7 | 65% |
+| alakazam-stock (best) | 14-6 | 70% |
+
+**Overall 90-69 (57%), 0 crashes.** Worst matchup 42% ties kangaskhan's
+worst (42% vs lucario); overall 57% beats kangaskhan's 54%. New max-min
+co-champion by overall record, despite the all-ex prize liability —
+under this pilot, "never needs a plan" outweighed "gives up 2 prizes."
+Caveat: not yet run against alakazam-prime or in the full Swiss gauntlet
+format (single elimination pressure may punish the prize liability more
+than round-robin does — untested).
+
 ## Nomination
 
 **Mega Kangaskhan box (deck_t3, STOCK list) = best ladder-deck candidate** by
