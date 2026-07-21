@@ -327,8 +327,9 @@ def _human_main_checklist(obs: dict, sit: Dict[str, Any], opt: dict, opt_type: i
             if sit["my_active_id"] in ATTACKERS or sit["my_active_id"] in (ID_DREEPY, ID_DRAKLOAK, ID_DUSKULL, ID_DUSCLOPS):
                 score += 15.0
         elif opt.get("inPlayArea") == AREA_BENCH:
-            # Human rarely loads bench before Active can attack
-            score -= 40.0
+            # Softer penalty: the second Dragapult powers up on the bench
+            # while the active trades — full -40 starved the backup attacker
+            score -= 15.0
         return score
 
     # --- Evolve: "build the line" ---
