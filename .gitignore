@@ -7,3 +7,4 @@ libcg_docker.so
 eval/results_*.jsonl
 eval/results_train_*.jsonl
 submission.tar.gz
+data/Card_ID List_EN.pdf
