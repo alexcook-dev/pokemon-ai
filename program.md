@@ -115,6 +115,26 @@ tail -n 30 run.log
 
 Current known baseline from prior runs: ~54% (v3 heuristics). Beat that first.
 
+### Protocol v2 — champion-vs-challenger (human-approved 2026-07-20)
+
+Once vs-random saturates (~90%+), it stops discriminating: no headroom, and
+±3pp sampling noise swamps real gains. Protocol v2 replaces the keep gate:
+
+- **Champion** = last kept commit, snapshotted via `eval/set_champion.sh <commit>`
+  into `eval/champion/` (gitignored). `COMMIT` file records identity.
+- **Eval:** `TRAIN_OPPONENT=snapshot ./eval/run_train_eval.sh` — challenger
+  (current checkout) vs champion, seats alternating per game so first-player
+  advantage cancels. `win_rate` is always the CHALLENGER's.
+- **Keep rule v2:** challenger `win_rate ≥ 0.55` over 50 games AND
+  `crash_rate == 0`. On keep, the kept commit becomes the new champion
+  (re-run `eval/set_champion.sh`). Below 0.55 → discard (0.50 = equal;
+  0.55 ≈ 1.4σ above equal at n=50).
+- vs-random remains as a periodic sanity check (must stay ≥90%); it is no
+  longer the keep gate.
+- This section was added with explicit human approval — the harness edit
+  adding `--opponent snapshot` (eval/run_batch.py) is the ONE sanctioned
+  change; the frozen-harness rule still applies to everything else.
+
 ---
 
 ## Setup (once per research branch)

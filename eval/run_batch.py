@@ -61,6 +61,7 @@ def resolve_matchup(
     - random: both decks = deck.csv; our agent vs random legal actions
     - self:   both decks = deck.csv; our agent vs our agent
     - deck_b: deck.csv vs deck_b.csv; our agent vs random (baseline)
+    (snapshot mode is resolved in main() — it needs the loaded champion)
     """
     if opponent == "random":
         return deck_a, deck_a, our_agent, make_random_agent(deck_a)
@@ -69,6 +70,44 @@ def resolve_matchup(
     if opponent == "deck_b":
         return deck_a, deck_b, our_agent, make_random_agent(deck_b)
     raise ValueError(f"Unknown opponent mode: {opponent}")
+
+
+def load_snapshot_agent(snapshot_dir: Path) -> Tuple[AgentFn, List[int]]:
+    """Load the champion agent from a self-contained snapshot directory.
+
+    Protocol v2 (champion-vs-challenger, human-approved 2026-07-20).
+    The snapshot holds main.py + agent/ + deck.csv + data/ from the champion
+    commit (populated by eval/set_champion.sh). Import it with the snapshot
+    dir at sys.path[0] and a scrubbed module cache so its `agent` package
+    resolves to the snapshot copy, then restore the cache so the already-
+    imported challenger modules are untouched.
+    """
+    import importlib
+
+    snapshot_dir = snapshot_dir.resolve()
+    if not (snapshot_dir / "main.py").exists():
+        raise SystemExit(
+            f"snapshot missing main.py: {snapshot_dir} — run eval/set_champion.sh <commit>"
+        )
+    saved_modules: Dict[str, Any] = {}
+    for name in list(sys.modules):
+        if name == "main" or name == "agent" or name.startswith("agent."):
+            saved_modules[name] = sys.modules.pop(name)
+    saved_path = list(sys.path)
+    sys.path.insert(0, str(snapshot_dir))
+    try:
+        champ_main = importlib.import_module("main")
+        champ_agent: AgentFn = champ_main.agent
+        champ_deck = list(champ_main.DECK)
+    finally:
+        sys.path[:] = saved_path
+        for name in list(sys.modules):
+            if name == "main" or name == "agent" or name.startswith("agent."):
+                del sys.modules[name]
+        sys.modules.update(saved_modules)
+    if len(champ_deck) != 60:
+        raise SystemExit(f"champion deck has {len(champ_deck)} cards, need 60")
+    return champ_agent, champ_deck
 
 
 def classify_result(steps: list) -> Tuple[str, Optional[List[Any]], int]:
@@ -200,9 +239,15 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     p.add_argument("--games", type=int, default=10, help="Number of games (default 10; v1 gate uses 50)")
     p.add_argument(
         "--opponent",
-        choices=("random", "self", "deck_b"),
+        choices=("random", "self", "deck_b", "snapshot"),
         default="random",
-        help="Opponent mode (default: random)",
+        help="Opponent mode (default: random). snapshot = champion-vs-challenger (protocol v2)",
+    )
+    p.add_argument(
+        "--snapshot-dir",
+        type=Path,
+        default=ROOT / "eval" / "champion",
+        help="Champion snapshot dir for --opponent snapshot (default: eval/champion)",
     )
     p.add_argument("--seed", type=int, default=0, help="Base RNG seed (game i uses seed+i)")
     p.add_argument(
@@ -230,7 +275,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     else:
         deck_b = list(deck_a)
 
-    deck0, deck1, agent0, agent1 = resolve_matchup(args.opponent, deck_a, deck_b)
+    champ_note = ""
+    if args.opponent == "snapshot":
+        champ_agent, champ_deck = load_snapshot_agent(args.snapshot_dir)
+        commit_file = args.snapshot_dir / "COMMIT"
+        champ_note = commit_file.read_text().strip() if commit_file.exists() else "?"
+        deck0, deck1, agent0, agent1 = deck_a, champ_deck, our_agent, champ_agent
+    else:
+        deck0, deck1, agent0, agent1 = resolve_matchup(args.opponent, deck_a, deck_b)
 
     out_path: Path = args.out
     if not out_path.is_absolute():
@@ -238,23 +290,44 @@ def main(argv: Optional[List[str]] = None) -> int:
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     print(
-        f"Running {args.games} games | opponent={args.opponent} | "
-        f"seed={args.seed} | out={out_path}"
+        f"Running {args.games} games | opponent={args.opponent}"
+        + (f" (champion {champ_note}, seats alternate)" if champ_note else "")
+        + f" | seed={args.seed} | out={out_path}"
     )
 
     records: List[Dict[str, Any]] = []
     with out_path.open("a", encoding="utf-8") as fh:
         for i in range(args.games):
             game_seed = args.seed + i
-            rec = run_one_game(
-                game_idx=i,
-                deck0=deck0,
-                deck1=deck1,
-                agent0=agent0,
-                agent1=agent1,
-                seed=game_seed,
-                opponent=args.opponent,
-            )
+            # Snapshot mode: alternate seats so first-player advantage
+            # cancels out; win/loss is always from the CHALLENGER's side.
+            swap = args.opponent == "snapshot" and (i % 2 == 1)
+            if swap:
+                rec = run_one_game(
+                    game_idx=i,
+                    deck0=deck1,
+                    deck1=deck0,
+                    agent0=agent1,
+                    agent1=agent0,
+                    seed=game_seed,
+                    opponent=args.opponent,
+                )
+                if rec["result"] == "win":
+                    rec["result"] = "loss"
+                elif rec["result"] == "loss":
+                    rec["result"] = "win"
+            else:
+                rec = run_one_game(
+                    game_idx=i,
+                    deck0=deck0,
+                    deck1=deck1,
+                    agent0=agent0,
+                    agent1=agent1,
+                    seed=game_seed,
+                    opponent=args.opponent,
+                )
+            if args.opponent == "snapshot":
+                rec["challenger_seat"] = 1 if swap else 0
             records.append(rec)
             fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
             fh.flush()
